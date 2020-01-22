@@ -22,13 +22,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	master_config.vm.synced_folder "saltstack/etc/master.d/", "/etc/salt/master.d"
 	
     master_config.vm.provision :salt do |salt|
+	  salt.minion_config = "saltstack/etc/m_minion"
       salt.master_config = "saltstack/etc/master"
       salt.master_key = "saltstack/keys/master_minion.pem"
       salt.master_pub = "saltstack/keys/master_minion.pub"
       salt.minion_key = "saltstack/keys/master_minion.pem"
       salt.minion_pub = "saltstack/keys/master_minion.pub"
       salt.seed_master = {
-                          "minion" => "saltstack/keys/minion.pub"
+                          "minion" => "saltstack/keys/minion.pub",
+						  "master" => "saltstack/keys/master_minion.pub"
                          }
 
       salt.install_type = "stable"

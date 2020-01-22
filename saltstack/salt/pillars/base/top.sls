@@ -1,4 +1,4 @@
 base:
-  'minion1':
+  'minion':
      - jenkins
      - jenkins.users

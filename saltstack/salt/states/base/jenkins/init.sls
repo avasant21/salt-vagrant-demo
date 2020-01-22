@@ -1,19 +1,19 @@
-{%- set jenkins_port = salt['pillar.get']('jenkins:config:jenkins_port') -%}
-{%- set jenkins_dir_home = salt['pillar.get']('jenkins:config:dir:home') -%}
-{%- set jenkins_dir_log = salt['pillar.get']('jenkins:config:dir:log') -%}
-{%- set jenkins_dir_cache = salt['pillar.get']('jenkins:config:dir:cache') -%}
-{%- set jenkins_user = salt['pillar.get']('jenkins:config:user') -%}
-{%- set jenkins_group = salt['pillar.get']('jenkins:config:group') -%}
-{%- set jenkins_additional_group = salt['pillar.get']('jenkins:config:additional_groups') -%}
-{%- set jenkins_server = salt['pillar.get']('jenkins:config:server_name') -%}
-{%- set jenkins_url = salt['pillar.get']('jenkins:config:master_url') -%}
-{%- set jenkins_plugins = salt['pillar.get']('jenkins:config:plugins') -%}
-{%- set jenkins_pkgs = salt['pillar.get']('jenkins:config:pkgs') -%}
-{%- set jenkins_cli_path = salt['pillar.get']('jenkins:config:cli_path') -%}
-{%- set jenkins_java_exec = salt['pillar.get']('jenkins:config:java_executable') -%}
-{%- set jenkins_update_src = salt['pillar.get']('jenkins:config:plugins:updates_source') -%}
-{%- set jenkins_plugins = salt['pillar.get']('jenkins:config:plugins:installed') -%}
-{%- set jenkins_update_timeout = salt['pillar.get']('jenkins:config:plugins:timeout') -%}
+{% set jenkins_port = salt['pillar.get']('jenkins:config:jenkins_port') %}
+{% set jenkins_dir_home = salt['pillar.get']('jenkins:config:dir:home') %}
+{% set jenkins_dir_log = salt['pillar.get']('jenkins:config:dir:log') %}
+{% set jenkins_dir_cache = salt['pillar.get']('jenkins:config:dir:cache') %}
+{% set jenkins_user = salt['pillar.get']('jenkins:config:user') %}
+{% set jenkins_group = salt['pillar.get']('jenkins:config:group') %}
+{% set jenkins_additional_group = salt['pillar.get']('jenkins:config:additional_groups') %}
+{% set jenkins_server = salt['pillar.get']('jenkins:config:server_name') %}
+{% set jenkins_url = salt['pillar.get']('jenkins:config:master_url') %}
+{% set jenkins_plugins = salt['pillar.get']('jenkins:config:plugins') %}
+{% set jenkins_pkgs = salt['pillar.get']('jenkins:config:pkgs') %}
+{% set jenkins_cli_path = salt['pillar.get']('jenkins:config:cli_path') %}
+{% set jenkins_java_exec = salt['pillar.get']('jenkins:config:java_executable') %}
+{% set jenkins_update_src = salt['pillar.get']('jenkins:config:plugins:updates_source') %}
+{% set jenkins_plugins = salt['pillar.get']('jenkins:config:plugins:installed') %}
+{% set jenkins_update_timeout = salt['pillar.get']('jenkins:config:plugins:timeout') %}
 
 
 {% set timeout = 360 %}
