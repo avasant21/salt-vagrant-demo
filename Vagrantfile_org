@@ -16,11 +16,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
     
     master_config.vm.box = "#{os}"
-    master_config.vm.host_name = 'master'
+    master_config.vm.host_name = 'saltmaster.local'
     master_config.vm.network "private_network", ip: "#{net_ip}.10"
     master_config.vm.synced_folder "saltstack/salt/", "/srv/salt"
-	master_config.vm.synced_folder "saltstack/etc/master.d/", "/etc/salt/master.d"
-	
+    master_config.vm.synced_folder "saltstack/pillar/", "/srv/pillar"
+
     master_config.vm.provision :salt do |salt|
       salt.master_config = "saltstack/etc/master"
       salt.master_key = "saltstack/keys/master_minion.pem"
@@ -28,12 +28,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       salt.minion_key = "saltstack/keys/master_minion.pem"
       salt.minion_pub = "saltstack/keys/master_minion.pub"
       salt.seed_master = {
-                          "minion" => "saltstack/keys/minion.pub"
+                          "minion1" => "saltstack/keys/minion1.pub",
+                          "minion2" => "saltstack/keys/minion2.pub"
                          }
 
       salt.install_type = "stable"
       salt.install_master = true
-      salt.no_minion = false
+      salt.no_minion = true
       salt.verbose = true
       salt.colorize = true
       salt.bootstrap_options = "-P -c /tmp"
@@ -42,7 +43,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 
   [
-    ["minion",    "#{net_ip}.11",    "1024",    os ],
+    ["minion1",    "#{net_ip}.11",    "1024",    os ],
+    ["minion2",    "#{net_ip}.12",    "1024",    os ],
   ].each do |vmname,ip,mem,os|
     config.vm.define "#{vmname}" do |minion_config|
       minion_config.vm.provider "virtualbox" do |vb|
