@@ -1,4 +1,5 @@
 base:
-  'minion':
+  '*':
+     - java
      - jenkins
      - jenkins.users

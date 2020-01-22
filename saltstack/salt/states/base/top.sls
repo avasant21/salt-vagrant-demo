@@ -1,4 +1,7 @@
 base:
-  'minion':
+  '*':
+    - java
     - jenkins
+    - jenkins.cli
+    - jenkins.plugins
     - jenkins.users

@@ -9,10 +9,15 @@
 {% for user, args in pillar.get('users', {}).iteritems() %}
 {{ user }}:
    cmd.run:
-     - unless: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.securityRealm.getAllUsers();' | grep {{ user }}
-     - name: |
-         {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.securityRealm.createAccount("{{ user }}", "{{ args['password'] }}")'
-         {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.securityRealm.allUsers.find {it.id == "{{ user }}"}.setFullName("{{ args['fullname'] }}")'
+     - unless: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.securityRealm.allUsers.find {it.id == "{{ user }}"}.getId()' | grep {{ user }}
+     - name: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.securityRealm.createAccount("{{ user }}", "{{ args['password'] }}")'
      - require:
-       - cmd: jenkins_responding
+       - cmd: plugins_jenkins_serving
+
+{{ user }}_fullname:
+   cmd.run:
+     - unless: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.securityRealm.allUsers.find {it.id == "{{ user }}"}' | grep '{{ args['fullname'] }}'
+     - name: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.securityRealm.allUsers.find {it.id == "{{ user }}"}.setFullName("{{ args['fullname'] }}")'
+     - require:
+       - cmd: {{ user }}
 {% endfor %}

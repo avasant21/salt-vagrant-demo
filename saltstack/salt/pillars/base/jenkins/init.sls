@@ -10,7 +10,9 @@ jenkins:
     additional_groups: ["www-data"]
     server_name: localhost
     master_url: http://localhost:8080
-    pkgs: ["jenkins"]
+    pkgs: 
+      jenkins:
+        version: 2.215
     java_args: -Djava.awt.headless=true
     java_executable: /usr/bin/java
     cli_path: /var/cache/jenkins/jenkins-cli.jar
@@ -20,10 +22,9 @@ jenkins:
       http_auth: admin:$(cat /var/lib/jenkins/secrets/initialAdminPassword)
     plugins:
       updates_source: http://updates.jenkins-ci.org/update-center.json
-      timeout: 90
+      timeout: 45
       installed:
         - ant
-        - bitbucket
         - build-pipeline-plugin
         - build-timeout
         - clearcase
@@ -52,8 +53,27 @@ jenkins:
         - subversion
         - throttle-concurrents
         - timestamper
-        - warnings
         - ws-cleanup
+        - bitbucket
+        - pipeline-milestone-step
+        - pipeline-input-step
+        - pipeline-stage-step
+        - pipeline-graph-analysis
+        - pipeline-rest-api
+        - handlebars
+        - momentjs
+        - pipeline-stage-view
+        - pipeline-build-step
+        - pipeline-model-api
+        - pipeline-model-extensions
+        - authentication-tokens
+        - docker-commons
+        - docker-workflow
+        - pipeline-stage-tags-metadata
+        - pipeline-model-declarative-agent
+        - pipeline-model-definition
+        - lockable-resources
+        - workflow-aggregator
     jobs:
       installed: {}
       absent: []
