@@ -1,5 +1,8 @@
-users:
-  jenkins:
-    password: Jenkins@1234
-    fullname: Jenkins
-    email: jenkins@jenkins.com
+present_users:
+  vasanth:
+    password: Vasanth@1234
+    fullname: "Vasanth A"
+    email: vasanth.a@cambiumnetworks.com
+
+deleted_users:
+  - jenkins

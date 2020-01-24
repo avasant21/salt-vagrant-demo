@@ -22,13 +22,9 @@ jenkins:
       http_auth: admin:$(cat /var/lib/jenkins/secrets/initialAdminPassword)
     plugins:
       updates_source: http://updates.jenkins-ci.org/update-center.json
-      timeout: 45
+      timeout: 90
       installed:
         - ant
-        - build-pipeline-plugin
-        - build-timeout
-        - clearcase
-        - conditional-buildstep
         - copyartifact
         - credentials-binding
         - email-ext
@@ -53,6 +49,10 @@ jenkins:
         - subversion
         - throttle-concurrents
         - timestamper
+        - build-pipeline-plugin
+        - build-timeout
+        - clearcase
+        - conditional-buildstep
         - ws-cleanup
         - bitbucket
         - pipeline-milestone-step
@@ -74,6 +74,7 @@ jenkins:
         - pipeline-model-definition
         - lockable-resources
         - workflow-aggregator
+        - groovy-remote
     jobs:
       installed: {}
       absent: []

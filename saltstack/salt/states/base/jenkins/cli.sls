@@ -26,17 +26,17 @@ jenkins_cli_jar:
 {% set jenkins_admin_token = "$(cat /var/lib/jenkins/secrets/initialAdminPassword)" %}
 {% set jenkins_cli = "{0} -jar {1} -s {2} -http -auth admin:{3}".format(jenkins_java_exec,jenkins_cli_path,jenkins_url,jenkins_admin_token) %}
 
-restart_jenkins:
-  cmd.wait:
-    - name: "{{ jenkins_cli }} safe-restart"
-    - require:
-      - cmd: jenkins_cli_jar
+#restart_jenkins:
+#  cmd.wait:
+#    - name: "{{ jenkins_cli }} safe-restart"
+#    - require:
+#      - cmd: jenkins_cli_jar
 
-reload_jenkins_config:
-  cmd.wait:
-    - name: "{{ jenkins_cli }} reload-configuration"
-    - require:
-      - cmd: jenkins_cli_jar
+#reload_jenkins_config:
+#  cmd.wait:
+#    - name: "{{ jenkins_cli }} reload-configuration"
+#    - require:
+#      - cmd: jenkins_cli_jar
 
 jenkins_responding:
   cmd.wait:
@@ -44,6 +44,6 @@ jenkins_responding:
     - timeout: {{ timeout }}
     - watch:
       - cmd: jenkins_cli_jar
-    - require: 
-      - cmd: reload_jenkins_config
-      - cmd: restart_jenkins
+#    - require: 
+#      - cmd: reload_jenkins_config
+#      - cmd: restart_jenkins
