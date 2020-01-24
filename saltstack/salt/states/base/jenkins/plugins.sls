@@ -42,7 +42,7 @@ export_plugin_list:
 {% for plugin in jenkins_plugins %}
 jenkins_install_plugin_{{ plugin }}:
   cmd.run:
-    - unless: grep -w {{ plugin }} /tmp/jenkins_pluginlist.txt # {{ jenkins_cli }} list-plugins | grep -w {{ plugin }}
+    - unless: grep -w {{ plugin }} /tmp/jenkins_pluginlist.txt
     - name: {{ jenkins_cli }} install-plugin {{ plugin }}
     - timeout: {{ jenkins_update_timeout }}
     - require:

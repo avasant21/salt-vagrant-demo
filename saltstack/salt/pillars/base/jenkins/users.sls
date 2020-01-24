@@ -5,4 +5,4 @@ present_users:
     email: vasanth.a@cambiumnetworks.com
 
 deleted_users:
-  - jenkins
+  - 

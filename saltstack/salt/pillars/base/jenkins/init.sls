@@ -74,7 +74,6 @@ jenkins:
         - pipeline-model-definition
         - lockable-resources
         - workflow-aggregator
-        - groovy-remote
     jobs:
       installed: {}
       absent: []
