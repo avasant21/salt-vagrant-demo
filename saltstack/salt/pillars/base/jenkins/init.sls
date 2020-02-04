@@ -10,9 +10,10 @@ jenkins:
     additional_groups: ["www-data"]
     server_name: localhost
     master_url: http://localhost:8080
+    master_admin: cnMaestro Jenkins <cnmaestro_jenkins@cambiumnetworks.com>
     pkgs: 
       jenkins:
-        version: 2.215
+        version: 2.219
     java_args: -Djava.awt.headless=true
     java_executable: /usr/bin/java
     cli_path: /var/cache/jenkins/jenkins-cli.jar
@@ -74,6 +75,7 @@ jenkins:
         - pipeline-model-definition
         - lockable-resources
         - workflow-aggregator
+        - authorize-project
     jobs:
       installed: {}
       absent: []

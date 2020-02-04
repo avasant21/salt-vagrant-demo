@@ -1,4 +1,6 @@
 {% set jenkins_url = salt['pillar.get']('jenkins:config:master_url') %}
+{% set jenkins_master_admin = salt['pillar.get']('jenkins:config:master_admin') %}
+{% set jenkins_server_name = salt['pillar.get']('jenkins:config:server_name') %}
 {% set jenkins_cli_path = salt['pillar.get']('jenkins:config:cli_path') %}
 {% set jenkins_java_exec = salt['pillar.get']('jenkins:config:java_executable') %}
 
@@ -32,3 +34,12 @@ jenkins_responding:
     - timeout: {{ timeout }}
     - watch:
       - cmd: jenkins_cli_jar
+
+jenkins_set_url:
+  cmd.run:
+    - unless: {{ jenkins_cli }} groovysh 'jenkins.model.JenkinsLocationConfiguration.get().getUrl()' | grep '{{ jenkins_server_name }}'
+    - name: |
+        {{ jenkins_cli }} groovysh 'jenkins.model.JenkinsLocationConfiguration.get().setUrl("{{ jenkins_url }}")'
+        {{ jenkins_cli }} groovysh 'jenkins.model.JenkinsLocationConfiguration.get().setAdminAddress("{{ jenkins_master_admin }}")'
+    - require:
+      - service: jenkins_service
