@@ -5,3 +5,4 @@ base:
     - jenkins.cli
     - jenkins.plugins
     - jenkins.users
+    - jenkins.jobs

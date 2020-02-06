@@ -37,14 +37,16 @@ jenkins_updates_file:
 
 export_plugin_list:
   cmd.run:
-    - name: {{ jenkins_cli }} list-plugins > /tmp/jenkins_pluginlist.txt
+    - name: {{ jenkins_cli }} list-plugins | awk '{if(substr($NF, length($NF))==")") print $1":"$(NF - 1) ; else print $1":"$NF}' > /tmp/jenkins_pluginlist.txt
 
 {% for plugin in jenkins_plugins %}
 jenkins_install_plugin_{{ plugin }}:
   cmd.run:
-    - unless: grep -w {{ plugin }} /tmp/jenkins_pluginlist.txt
+    - unless: grep -w '{{ plugin }}' /tmp/jenkins_pluginlist.txt
     - name: {{ jenkins_cli }} install-plugin {{ plugin }}
+{% if 'aws-java-sdk' not in plugin %}
     - timeout: {{ jenkins_update_timeout }}
+{% endif %}
     - require:
       - cmd: export_plugin_list
       - cmd: jenkins_updates_file
@@ -63,17 +65,3 @@ plugins_jenkins_serving:
   cmd.wait:
     - name: "until (curl -I -L {{ jenkins_url }}/jnlpJars/jenkins-cli.jar | grep \"Content-Type: application/java-archive\"); do sleep 1; done"
     - timeout: {{ timeout }}
-
-update_jenkins_plugins:
-  cmd.run:
-    - onlyif: {{ jenkins_cli }} list-plugins | grep -e ')$'
-    - name: |
-        for plugin in $({{ jenkins_cli }} list-plugins | grep -e ')$' | awk '{print $1}')
-        do
-        {{ jenkins_cli }} install-plugin ${plugin}
-        done
-    - require:
-      - cmd: jenkins_updates_file
-      - cmd: jenkins_serving
-    - watch_in:
-      - cmd: plugins_restart_jenkins
