@@ -1,0 +1,232 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>cnMaestro OVA Release Builds</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.27">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <com.synopsys.arc.jenkinsci.plugins.jobrestrictions.jobs.JobRestrictionProperty plugin="job-restrictions@0.6"/>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>RELEASE_TYPE</name>
+          <description></description>
+          <defaultValue>Alpha</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>RELEASE_VER</name>
+          <description>From which release branch number (2.3.0, 2.4.0, 3.0.0 etc)</description>
+          <defaultValue>2.3.0</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OVA_VERSION</name>
+          <description>kept inside /etc/salt/grains</description>
+          <defaultValue>2.3.0-b23</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>BUILD_ID</name>
+          <description>cnmaestro and cnssops tags</description>
+          <defaultValue>2.3.0-b23-noc</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>AURORA_VER</name>
+          <description>Aurora ctlr and guest debian build</description>
+          <defaultValue>2.3-a7</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>EOGRE_VER</name>
+          <description>tunnel eogre debian build</description>
+          <defaultValue>2.3-b1</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@3.8.0">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>ssh://git@bitbucket.cambiumnetworks.com:7999/cnssng/cnssops.git</url>
+        <credentialsId>5fbdc694-e002-4a4c-b41e-04eed7dcc9c0</credentialsId>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>${BUILD_ID}</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.GitLFSPull/>
+      <hudson.plugins.git.extensions.impl.CleanBeforeCheckout/>
+    </extensions>
+  </scm>
+  <assignedNode>usil01cnmaestrobld01.camnwk.com</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>echo ${WORKSPACE}
+cd jenkins
+sudo python trigger_ova.py -n ${OVA_VERSION} -c ${BUILD_ID} -a ${AURORA_VER} -e  ${EOGRE_VER} -p ${WORKSPACE}
+</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>cp /home/jenkins-slave/os/ubuntu-16.04.6-server-amd64.iso ${WORKSPACE}/packer/iso
+cp -r /home/jenkins-slave/device_images/* ${WORKSPACE}/salt/states/noc/device/images</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>#clean build directory
+rm -rf build
+
+echo ${WORKSPACE}
+pwd
+cd packer
+sh noc-ctlr-amd64.sh</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.plugins.emailext.ExtendedEmailPublisher plugin="email-ext@2.61">
+      <recipientList>cnmaestro-qa@cambiumnetworks.com; cnmaestro.dev@cambiumnetworks.com; anish.bosco@cambiumnetworks.com</recipientList>
+      <configuredTriggers>
+        <hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+          <email>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <recipientProviders>
+              <hudson.plugins.emailext.plugins.recipients.ListRecipientProvider/>
+            </recipientProviders>
+            <attachmentsPattern></attachmentsPattern>
+            <attachBuildLog>false</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo>$PROJECT_DEFAULT_REPLYTO</replyTo>
+            <contentType>project</contentType>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+        <hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
+          <email>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <recipientProviders>
+              <hudson.plugins.emailext.plugins.recipients.DevelopersRecipientProvider/>
+              <hudson.plugins.emailext.plugins.recipients.ListRecipientProvider/>
+            </recipientProviders>
+            <attachmentsPattern></attachmentsPattern>
+            <attachBuildLog>false</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo>$PROJECT_DEFAULT_REPLYTO</replyTo>
+            <contentType>project</contentType>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
+      </configuredTriggers>
+      <contentType>text/html</contentType>
+      <defaultSubject>cnMaestro OVA DEVELOPMENT Build :$OVA_VERSION result </defaultSubject>
+      <defaultContent>Hi All,
+
+cnMaestro OVA Build with id : $OVA_VERSION is $BUILD_STATUS,
+
+
+Regards,
+cnMaestro Team</defaultContent>
+      <attachmentsPattern></attachmentsPattern>
+      <presendScript>$DEFAULT_PRESEND_SCRIPT</presendScript>
+      <postsendScript></postsendScript>
+      <attachBuildLog>true</attachBuildLog>
+      <compressBuildLog>true</compressBuildLog>
+      <replyTo>cnmaestro-qa@cambiumnetworks.com; cnmaestro.dev@cambiumnetworks.com;anish.bosco@cambiumnetworks.com</replyTo>
+      <saveOutput>false</saveOutput>
+      <disabled>false</disabled>
+    </hudson.plugins.emailext.ExtendedEmailPublisher>
+    <jenkins.plugins.publish__over__cifs.CifsPublisherPlugin plugin="publish-over-cifs@0.9">
+      <consolePrefix>CIFS: </consolePrefix>
+      <delegate plugin="publish-over@0.21">
+        <publishers>
+          <jenkins.plugins.publish__over__cifs.CifsPublisher plugin="publish-over-cifs@0.9">
+            <configName>cnMaestro Software Release IN01</configName>
+            <verbose>true</verbose>
+            <transfers>
+              <jenkins.plugins.publish__over__cifs.CifsTransfer>
+                <remoteDirectory>/CNSNG/NOC_Builds/${RELEASE_TYPE}/${RELEASE_VER}/</remoteDirectory>
+                <sourceFiles>build/noc_$OVA_VERSION/*.ova</sourceFiles>
+                <excludes></excludes>
+                <removePrefix>build</removePrefix>
+                <remoteDirectorySDF>false</remoteDirectorySDF>
+                <flatten>false</flatten>
+                <cleanRemote>false</cleanRemote>
+                <noDefaultExcludes>false</noDefaultExcludes>
+                <makeEmptyDirs>false</makeEmptyDirs>
+                <patternSeparator>[, ]+</patternSeparator>
+              </jenkins.plugins.publish__over__cifs.CifsTransfer>
+            </transfers>
+            <useWorkspaceInPromotion>false</useWorkspaceInPromotion>
+            <usePromotionTimestamp>false</usePromotionTimestamp>
+          </jenkins.plugins.publish__over__cifs.CifsPublisher>
+        </publishers>
+        <continueOnError>false</continueOnError>
+        <failOnError>false</failOnError>
+        <alwaysPublishFromMaster>true</alwaysPublishFromMaster>
+        <hostConfigurationAccess class="jenkins.plugins.publish_over_cifs.CifsPublisherPlugin" reference="../.."/>
+      </delegate>
+    </jenkins.plugins.publish__over__cifs.CifsPublisherPlugin>
+    <jenkins.plugins.slack.SlackNotifier plugin="slack@2.3">
+      <baseUrl></baseUrl>
+      <teamDomain></teamDomain>
+      <authToken></authToken>
+      <authTokenCredentialId></authTokenCredentialId>
+      <botUser>false</botUser>
+      <room></room>
+      <startNotification>false</startNotification>
+      <notifySuccess>true</notifySuccess>
+      <notifyAborted>false</notifyAborted>
+      <notifyNotBuilt>false</notifyNotBuilt>
+      <notifyUnstable>false</notifyUnstable>
+      <notifyRegression>false</notifyRegression>
+      <notifyFailure>true</notifyFailure>
+      <notifyBackToNormal>false</notifyBackToNormal>
+      <notifyRepeatedFailure>false</notifyRepeatedFailure>
+      <includeTestSummary>false</includeTestSummary>
+      <includeFailedTests>false</includeFailedTests>
+      <commitInfoChoice>NONE</commitInfoChoice>
+      <includeCustomMessage>false</includeCustomMessage>
+      <customMessage></customMessage>
+    </jenkins.plugins.slack.SlackNotifier>
+    <hudson.plugins.parameterizedtrigger.BuildTrigger plugin="parameterized-trigger@2.35.2">
+      <configs>
+        <hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+          <configs>
+            <hudson.plugins.parameterizedtrigger.NodeParameters/>
+            <hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+              <properties>CnMaestroBuild=None
+ovapath=${RELEASE_TYPE}/${RELEASE_VER}/noc_${OVA_VERSION}/cnmaestro-on-premises_${OVA_VERSION}_amd64.ova</properties>
+              <textParamValueOnNewLine>false</textParamValueOnNewLine>
+            </hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+          </configs>
+          <projects>cnmaestro_smoke_noc_automated_sanity</projects>
+          <condition>SUCCESS</condition>
+          <triggerWithNoParameters>false</triggerWithNoParameters>
+          <triggerFromChildProjects>false</triggerFromChildProjects>
+        </hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+      </configs>
+    </hudson.plugins.parameterizedtrigger.BuildTrigger>
+  </publishers>
+  <buildWrappers>
+    <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.6.8">
+      <template>${BUILD_ID}#${BUILD_NUMBER}</template>
+      <runAtStart>true</runAtStart>
+      <runAtEnd>false</runAtEnd>
+    </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
+  </buildWrappers>
+</project>

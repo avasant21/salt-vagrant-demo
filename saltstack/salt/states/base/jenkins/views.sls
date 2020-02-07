@@ -7,7 +7,7 @@
 {% set jenkins_admin_token = "$(cat /var/lib/jenkins/secrets/initialAdminPassword)" %}
 {% set jenkins_cli = "{0} -jar {1} -s {2} -http -auth admin:{3}".format(jenkins_java_exec,jenkins_cli_path,jenkins_url,jenkins_admin_token) %}
 
-/var/log/jenkins/jobs_xml:
+/var/log/jenkins/views_xml:
   file.directory:
     - user: {{ jenkins_user }}
     - group: {{ jenkins_group }}
@@ -17,23 +17,19 @@
       - user: jenkins_user
       - group: jenkins_group  
 
-export_jobs_list:
-  cmd.run:
-    - name: {{ jenkins_cli }} list-jobs > /tmp/jenkins_joblist.txt
-
-{% for jenkins_job in salt['pillar.get']('jobs:create') %}
-jobs_xml_{{ jenkins_job }}:
+{% for jenkins_view in salt['pillar.get']('views:create') %}
+views_xml_{{ jenkins_view }}:
   file.managed:
-    - unless: test -f /var/log/jenkins/jobs_xml/{{ jenkins_job }}.xml
-    - name: /var/log/jenkins/jobs_xml/{{ jenkins_job }}.xml
-    - source: salt://jenkins/jobs/{{ jenkins_job }}.xml
+    - unless: test -f /var/log/jenkins/views_xml/{{ jenkins_view }}.xml
+    - name: /var/log/jenkins/views_xml/{{ jenkins_view }}.xml
+    - source: salt://jenkins/views/{{ jenkins_view }}.xml
     - require_in:
-      - jenkins_job_{{ jenkins_job }}
+      - jenkins_view_{{ jenkins_view }}
     - require:
       - cmd: plugins_jenkins_serving
 
-jenkins_job_{{ jenkins_job }}:
+jenkins_view_{{ jenkins_view }}:
   cmd.run:
-    - unless: grep -w '{{ jenkins_job }}' /tmp/jenkins_joblist.txt
-    - name: {{ jenkins_cli }} create-job '{{ jenkins_job }}' < /var/log/jenkins/jobs_xml/{{ jenkins_job }}.xml
+    - unless: {{ jenkins_cli }} get-view '{{ jenkins_view }}'
+    - name: {{ jenkins_cli }} create-view {{ jenkins_view }} < /var/log/jenkins/views_xml/{{ jenkins_view }}.xml
 {% endfor %}

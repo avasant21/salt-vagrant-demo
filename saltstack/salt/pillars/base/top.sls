@@ -4,3 +4,4 @@ base:
      - jenkins
      - jenkins.users
      - jenkins.jobs
+     - jenkins.views

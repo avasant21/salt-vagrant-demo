@@ -1,0 +1,386 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.27">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <com.synopsys.arc.jenkinsci.plugins.jobrestrictions.jobs.JobRestrictionProperty plugin="job-restrictions@0.6"/>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>BUILD_ID</name>
+          <description>tag for build No – CNS2_0_Build_8</description>
+          <defaultValue>CNS2_0_Build_Test</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>DEPLOYMENT</name>
+          <description>Two types of DEPLOYMENT: cloud or noc
+
+1) Cloud deployment will be hosted in AWS without minifying server code
+2) noc deployment will be hosted in VM with minified server code</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>CLOUD</string>
+              <string>NOC</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>TAG</name>
+          <description>CHANGELOG DIFF FROM LAST BUILD</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@3.8.0">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>ssh://git@bitbucket.cambiumnetworks.com:7999/cnssng/cnssng.git</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>refs/tags/${BUILD_ID}</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+  <assignedNode>cnmaestro-build</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>true</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#git tag -a 0.8.0-${BUILD_NUMBER} -m &apos;Created by Jenkins Automated Build&apos;
+#git push --tags
+#git tag
+
+#prune old tags and always fetch latest tag
+git fetch --prune origin +refs/tags/*:refs/tags/*
+
+echo &quot;build starts...&quot;
+git describe
+
+#clean the node_modules &amp; build folder
+sudo rm -rf build
+sudo rm -rf build_debian
+sudo rm -rf node_modules
+sudo rm -rf server/node_modules
+sudo rm -rf client/node_modules
+sudo rm -rf test/node_modules
+
+pwd
+ls
+
+echo &quot;cnMaestro deployment type   :&quot; ${DEPLOYMENT}
+echo &quot;Build ID     :&quot; ${BUILD_ID}
+
+npm install
+grunt install
+
+#add build info
+#echo &quot;Build Time   :&quot; ${BUILD_TIMESTAMP} &gt;&gt; build/version.info
+#echo &quot;Build Number :&quot; ${BUILD_NUMBER} &gt;&gt; build/version.info
+#echo &quot;Build Version:&quot; ${GIT_COMMIT} &gt;&gt; build/version.info
+#echo &quot;Build ID     :&quot; ${BUILD_ID} &gt;&gt; build/version.info
+#echo &quot;Build Branch :&quot; $(git rev-parse --abbrev-ref HEAD) &gt;&gt; build/version.info
+
+#grunt build
+if [ ${DEPLOYMENT} = &quot;CLOUD&quot; ] || [ ${DEPLOYMENT} = &quot;debian&quot; ] || [ ${DEPLOYMENT} = &quot;deb&quot; ]; then
+  grunt build:debian:no --deployment=cloud --build=release
+elif [ ${DEPLOYMENT} = &quot;NOC&quot; ]; then
+  grunt build:noc:no --deployment=noc --build=release
+fi
+
+
+rm -rf build.tar
+rm -rf test.tar
+
+
+#tar -cvzf build.tar build
+
+#cd test
+#grunt build
+
+
+#tar -cvzf test.tar build
+#sudo -S mv test.tar ../
+#cd ..
+
+if [ ! -d &quot;/home/ftpuser/${BUILD_ID}&quot; ]; then
+  # Control will enter here if $DIRECTORY doesn&apos;t exist.
+  sudo -S mkdir /home/ftpuser/${BUILD_ID}
+  sudo chmod 777 /home/ftpuser/${BUILD_ID}
+fi
+
+#delete all old build files for server
+#sudo -S rm -rf /home/ftpuser/${BUILD_ID}/build.tar
+#sudo -S rm -rf /home/ftpuser/${BUILD_ID}/test.tar
+
+#copy all new build files to ftp server
+#sudo -S cp build.tar /home/ftpuser/${BUILD_ID}/
+#sudo -S cp test.tar /home/ftpuser/${BUILD_ID}/
+sudo -S cp build_debian/*.deb /home/ftpuser/${BUILD_ID}/
+
+
+if [ ${DEPLOYMENT} = &quot;NOC&quot; ]; then
+#delete all the .tar &amp; .deb files
+sudo -S rm -rf /home/ftpuser/${BUILD_ID}/*.tar.gz
+sudo -S rm -rf /home/ftpuser/${BUILD_ID}/cnmaestro-server*.deb
+#copy the newly created deb again
+sudo -S cp build_debian/*.deb /home/ftpuser/${BUILD_ID}/
+#copy the sample system.json
+sudo -S cp /home/ftpuser/system.json /home/ftpuser/${BUILD_ID}/
+
+
+cd /home/ftpuser/${BUILD_ID}
+#signed_script.sh cnmaestro-packages_${BUILD_ID}_all.tar *
+fi</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <org.jenkinsci.plugins.gitchangelog.GitChangelogRecorder plugin="git-changelog@1.57">
+      <config>
+        <configFile>git-changelog-settings.json</configFile>
+        <createFileTemplateContent>&lt;h1&gt; Git Changelog changelog &lt;/h1&gt;
+
+&lt;p&gt;
+Changelog of Git Changelog.
+&lt;/p&gt;
+
+{{#tags}}
+&lt;h2&gt; {{name}} &lt;/h2&gt;
+ {{#issues}}
+  {{#hasIssue}}
+   {{#hasLink}}
+&lt;h2&gt; {{name}} &lt;a href=&quot;{{link}}&quot;&gt;{{issue}}&lt;/a&gt; {{title}} &lt;/h2&gt;
+   {{/hasLink}}
+   {{^hasLink}}
+&lt;h2&gt; {{name}} {{issue}} {{title}} &lt;/h2&gt;
+   {{/hasLink}}
+  {{/hasIssue}}
+  {{^hasIssue}}
+&lt;h2&gt; {{name}} &lt;/h2&gt;
+  {{/hasIssue}}
+
+
+   {{#commits}}
+&lt;a href=&quot;https://github.com/tomasbjerre/git-changelog-lib/commit/{{hash}}&quot;&gt;{{hash}}&lt;/a&gt; {{authorName}} &lt;i&gt;{{commitTime}}&lt;/i&gt;
+&lt;p&gt;
+&lt;h3&gt;{{{messageTitle}}}&lt;/h3&gt;
+
+{{#messageBodyItems}}
+ &lt;li&gt; {{.}}&lt;/li&gt;
+{{/messageBodyItems}}
+&lt;/p&gt;
+  {{/commits}}
+
+ {{/issues}}
+{{/tags}}
+</createFileTemplateContent>
+        <createFileTemplateFile></createFileTemplateFile>
+        <createFileUseTemplateContent>false</createFileUseTemplateContent>
+        <createFileUseTemplateFile>false</createFileUseTemplateFile>
+        <customIssues>
+          <org.jenkinsci.plugins.gitchangelog.config.CustomIssue>
+            <link></link>
+            <name></name>
+            <pattern></pattern>
+            <title></title>
+          </org.jenkinsci.plugins.gitchangelog.config.CustomIssue>
+          <org.jenkinsci.plugins.gitchangelog.config.CustomIssue>
+            <link></link>
+            <name></name>
+            <pattern></pattern>
+            <title></title>
+          </org.jenkinsci.plugins.gitchangelog.config.CustomIssue>
+        </customIssues>
+        <dateFormat>YYYY-MM-dd HH:mm:ss</dateFormat>
+        <file>CHANGELOG.md</file>
+        <fromReference>${TAG}</fromReference>
+        <fromType>ref</fromType>
+        <gitHubApi></gitHubApi>
+        <gitHubIssuePattern>#([0-9]+)</gitHubIssuePattern>
+        <gitHubToken></gitHubToken>
+        <gitLabServer></gitLabServer>
+        <gitLabProjectName></gitLabProjectName>
+        <gitLabToken></gitLabToken>
+        <useGitLab>false</useGitLab>
+        <ignoreCommitsIfMessageMatches>^\[maven-release-plugin\].*|^\[Gradle Release Plugin\].*|^Merge.*</ignoreCommitsIfMessageMatches>
+        <ignoreCommitsWithoutIssue>false</ignoreCommitsWithoutIssue>
+        <ignoreTagsIfNameMatches></ignoreTagsIfNameMatches>
+        <jiraIssuePattern>\b[a-zA-Z]([a-zA-Z]+)-([0-9]+)\b</jiraIssuePattern>
+        <jiraPassword></jiraPassword>
+        <jiraServer></jiraServer>
+        <jiraUsername></jiraUsername>
+        <jiraUsernamePasswordCredentialsId></jiraUsernamePasswordCredentialsId>
+        <useJiraUsernamePasswordCredentialsId>false</useJiraUsernamePasswordCredentialsId>
+        <mediaWikiPassword></mediaWikiPassword>
+        <mediaWikiTemplateContent>__NOTOC__
+
+= Git Changelog changelog =
+Changelog of Git Changelog.
+
+{{#tags}}
+== {{name}} ==
+ {{#issues}}
+  {{#hasIssue}}
+   {{#hasLink}}
+=== {{name}} [{{link}} {{issue}}] {{title}} ===
+   {{/hasLink}}
+   {{^hasLink}}
+=== {{name}} {{issue}} {{title}} ===
+   {{/hasLink}}
+  {{/hasIssue}}
+  {{^hasIssue}}
+=== {{name}} ===
+  {{/hasIssue}}
+
+   {{#commits}}
+[https://github.com/tomasbjerre/git-changelog-lib/commit/{{hash}} {{hash}}] {{authorName}} {{commitTime}}
+
+&apos;&apos;&apos;{{{messageTitle}}}&apos;&apos;&apos;
+
+{{#messageBodyItems}}
+ * {{.}}
+{{/messageBodyItems}}
+
+  {{/commits}}
+
+ {{/issues}}
+{{/tags}}
+</mediaWikiTemplateContent>
+        <mediaWikiTemplateFile></mediaWikiTemplateFile>
+        <mediaWikiTitle></mediaWikiTitle>
+        <mediaWikiUrl></mediaWikiUrl>
+        <mediaWikiUsername></mediaWikiUsername>
+        <mediaWikiUseTemplateContent>false</mediaWikiUseTemplateContent>
+        <mediaWikiUseTemplateFile>false</mediaWikiUseTemplateFile>
+        <noIssueName>No issue</noIssueName>
+        <readableTagName>/([^/]+?)$</readableTagName>
+        <showSummary>true</showSummary>
+        <showSummaryTemplateContent># Changelog
+
+Changelog for {{ownerName}} {{repoName}}.
+
+{{#tags}}
+## {{name}}
+ {{#issues}}
+  {{#hasIssue}}
+   {{#hasLink}}
+### {{name}} [{{issue}}]({{link}}) {{title}} {{#hasIssueType}} *{{issueType}}* {{/hasIssueType}} {{#hasLabels}} {{#labels}} *{{.}}* {{/labels}} {{/hasLabels}}
+   {{/hasLink}}
+   {{^hasLink}}
+### {{name}} {{issue}} {{title}} {{#hasIssueType}} *{{issueType}}* {{/hasIssueType}} {{#hasLabels}} {{#labels}} *{{.}}* {{/labels}} {{/hasLabels}}
+   {{/hasLink}}
+  {{/hasIssue}}
+  {{^hasIssue}}
+### {{name}}
+  {{/hasIssue}}
+
+  {{#commits}}
+**{{{messageTitle}}}**
+
+{{#messageBodyItems}}
+ * {{.}}
+{{/messageBodyItems}}
+
+[{{hash}}](https://bitbucket.cambiumnetworks.com/{{ownerName}}/{{repoName}}/commit/{{hash}}) {{authorName}} *{{commitTime}}*
+
+  {{/commits}}
+
+ {{/issues}}
+{{/tags}}</showSummaryTemplateContent>
+        <showSummaryTemplateFile></showSummaryTemplateFile>
+        <showSummaryUseTemplateContent>true</showSummaryUseTemplateContent>
+        <showSummaryUseTemplateFile>false</showSummaryUseTemplateFile>
+        <subDirectory></subDirectory>
+        <timeZone>UTC</timeZone>
+        <toReference>${BUILD_ID}</toReference>
+        <toType>ref</toType>
+        <untaggedName>Unreleased</untaggedName>
+        <useConfigFile>false</useConfigFile>
+        <useFile>true</useFile>
+        <useGitHub>false</useGitHub>
+        <useIgnoreTagsIfNameMatches>false</useIgnoreTagsIfNameMatches>
+        <useJira>false</useJira>
+        <useMediaWiki>false</useMediaWiki>
+        <useReadableTagName>false</useReadableTagName>
+        <useSubDirectory>false</useSubDirectory>
+        <gitHubApiTokenCredentialsId></gitHubApiTokenCredentialsId>
+        <useGitHubApiTokenCredentials>false</useGitHubApiTokenCredentials>
+        <useGitLabApiTokenCredentials>false</useGitLabApiTokenCredentials>
+        <gitLabApiTokenCredentialsId></gitLabApiTokenCredentialsId>
+      </config>
+    </org.jenkinsci.plugins.gitchangelog.GitChangelogRecorder>
+    <hudson.plugins.emailext.ExtendedEmailPublisher plugin="email-ext@2.61">
+      <recipientList>cnmaestro-qa@cambiumnetworks.com, cnmaestro.dev@cambiumnetworks.com</recipientList>
+      <configuredTriggers>
+        <hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+          <email>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <recipientProviders>
+              <hudson.plugins.emailext.plugins.recipients.ListRecipientProvider/>
+            </recipientProviders>
+            <attachmentsPattern></attachmentsPattern>
+            <attachBuildLog>false</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo>$PROJECT_DEFAULT_REPLYTO</replyTo>
+            <contentType>project</contentType>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+        <hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
+          <email>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <recipientProviders>
+              <hudson.plugins.emailext.plugins.recipients.ListRecipientProvider/>
+            </recipientProviders>
+            <attachmentsPattern></attachmentsPattern>
+            <attachBuildLog>false</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo>$PROJECT_DEFAULT_REPLYTO</replyTo>
+            <contentType>project</contentType>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
+      </configuredTriggers>
+      <contentType>text/plain</contentType>
+      <defaultSubject>cnMaestro Server Release Build:$BUILD_ID is $BUILD_STATUS</defaultSubject>
+      <defaultContent>Hi All,
+
+cnMaestro Server Release Build with id : $BUILD_ID is executed,
+
+Build Status is $BUILD_URL :: $BUILD_STATUS
+
+Build Artifacts: ftp://in01jenkins01.camnwk.com/$BUILD_ID/
+login : ftpuser/ftpuser
+Commit: $GIT_COMMIT
+
+Regards,
+cnMaestro Team</defaultContent>
+      <attachmentsPattern>CHANGELOG.md</attachmentsPattern>
+      <presendScript>$DEFAULT_PRESEND_SCRIPT</presendScript>
+      <postsendScript></postsendScript>
+      <attachBuildLog>true</attachBuildLog>
+      <compressBuildLog>true</compressBuildLog>
+      <replyTo>anish.bosco@cambiumnetworks.com,ajay.singh@cambiumnetworks.com, rupam.khaitan@cambiumnetworks.com</replyTo>
+      <saveOutput>false</saveOutput>
+      <disabled>false</disabled>
+    </hudson.plugins.emailext.ExtendedEmailPublisher>
+  </publishers>
+  <buildWrappers/>
+</project>

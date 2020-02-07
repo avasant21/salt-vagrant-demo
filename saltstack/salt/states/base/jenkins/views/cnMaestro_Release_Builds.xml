@@ -1,0 +1,28 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<hudson.model.ListView>
+  <name>cnMaestro_Release_Builds</name>
+  <filterExecutors>false</filterExecutors>
+  <filterQueue>false</filterQueue>
+  <properties class="hudson.model.View$PropertyList"/>
+  <jobNames>
+    <comparator class="hudson.util.CaseInsensitiveComparator"/>
+    <string>cnmaestro_ova_release</string>
+    <string>Cnmaestro_Router_Release</string>
+    <string>Cnmaestro_Server_Release</string>
+    <string>cnmaestro_smoke_cloud_automated_sanity</string>
+    <string>cnmaestro_smoke_noc_automated_sanity</string>
+    <string>cnmaestro_wcs_ova_release</string>
+  </jobNames>
+  <jobFilters/>
+  <columns>
+    <hudson.views.StatusColumn/>
+    <hudson.views.WeatherColumn/>
+    <hudson.views.JobColumn/>
+    <hudson.views.LastSuccessColumn/>
+    <hudson.views.LastFailureColumn/>
+    <hudson.views.LastDurationColumn/>
+    <hudson.views.BuildButtonColumn/>
+    <hudson.plugins.robot.view.RobotListViewColumn plugin="robot@1.6.4"/>
+  </columns>
+  <recurse>false</recurse>
+</hudson.model.ListView>

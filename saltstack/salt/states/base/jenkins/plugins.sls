@@ -6,7 +6,7 @@
 {% set jenkins_java_exec = salt['pillar.get']('jenkins:config:java_executable') %}
 {% set jenkins_update_src = salt['pillar.get']('jenkins:config:plugins:updates_source') %}
 {% set jenkins_plugins = salt['pillar.get']('jenkins:config:plugins:installed') %}
-{% set jenkins_update_timeout = salt['pillar.get']('jenkins:config:plugins:timeout') %}
+{% set jenkins_update_tout = salt['pillar.get']('jenkins:config:plugins:timeout') %}
 
 {% set timeout = 360 %}
 
@@ -40,13 +40,19 @@ export_plugin_list:
     - name: {{ jenkins_cli }} list-plugins | awk '{if(substr($NF, length($NF))==")") print $1":"$(NF - 1) ; else print $1":"$NF}' > /tmp/jenkins_pluginlist.txt
 
 {% for plugin in jenkins_plugins %}
+{% set plugin_name = plugin.split(':')[0] %}
+{% set plugin_version = plugin.split(':')[1] %}
+
+{% set jenkins_update_timeout = jenkins_update_tout %}
+{% if 'aws-java-sdk' in plugin_name %}
+    {%- set jenkins_update_timeout = 300 %}
+{% endif %}
+
 jenkins_install_plugin_{{ plugin }}:
   cmd.run:
     - unless: grep -w '{{ plugin }}' /tmp/jenkins_pluginlist.txt
-    - name: {{ jenkins_cli }} install-plugin {{ plugin }}
-{% if 'aws-java-sdk' not in plugin %}
+    - name: {{ jenkins_cli }} install-plugin http://updates.jenkins-ci.org/download/plugins/{{ plugin_name }}/{{ plugin_version }}/{{ plugin_name }}.hpi
     - timeout: {{ jenkins_update_timeout }}
-{% endif %}
     - require:
       - cmd: export_plugin_list
       - cmd: jenkins_updates_file

@@ -1,0 +1,80 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.27">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <com.synopsys.arc.jenkinsci.plugins.jobrestrictions.jobs.JobRestrictionProperty plugin="job-restrictions@0.6"/>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>CnMaestroBuild</name>
+          <description></description>
+          <defaultValue>None</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ovapath</name>
+          <description></description>
+          <defaultValue>None</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>trigger_regression</name>
+          <description></description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>trigger_ha</name>
+          <description></description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteBuildConfiguration plugin="Parameterized-Remote-Trigger@2.2.2">
+      <token></token>
+      <remoteJenkinsName>cnmaestro-qa-automation</remoteJenkinsName>
+      <job>Production_NOC_Smoke_Pipeline</job>
+      <shouldNotFailBuild>false</shouldNotFailBuild>
+      <pollInterval>600</pollInterval>
+      <connectionRetryLimit>5</connectionRetryLimit>
+      <preventRemoteBuildQueue>true</preventRemoteBuildQueue>
+      <blockBuildUntilComplete>true</blockBuildUntilComplete>
+      <enhancedLogging>true</enhancedLogging>
+      <parameters>cnmaestro_build=${CnMaestroBuild}
+ovapath=${ovapath}
+trigger_regression=${trigger_regression}</parameters>
+      <parameterList>
+        <string>cnmaestro_build=${CnMaestroBuild}</string>
+        <string>ovapath=${ovapath}</string>
+        <string>trigger_regression=${trigger_regression}</string>
+      </parameterList>
+      <overrideAuth>false</overrideAuth>
+      <auth>
+        <org.jenkinsci.plugins.ParameterizedRemoteTrigger.Auth>
+          <NONE>none</NONE>
+          <API__TOKEN>apiToken</API__TOKEN>
+          <CREDENTIALS__PLUGIN>credentialsPlugin</CREDENTIALS__PLUGIN>
+        </org.jenkinsci.plugins.ParameterizedRemoteTrigger.Auth>
+      </auth>
+      <loadParamsFromFile>false</loadParamsFromFile>
+      <parameterFile></parameterFile>
+      <queryString></queryString>
+    </org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteBuildConfiguration>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

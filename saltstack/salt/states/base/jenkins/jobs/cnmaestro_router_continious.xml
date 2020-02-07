@@ -1,0 +1,196 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Project Cnmaestro Cloud Router Development Build - 2.1.0</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.27">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <com.synopsys.arc.jenkinsci.plugins.jobrestrictions.jobs.JobRestrictionProperty plugin="job-restrictions@0.6"/>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@3.8.0">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>ssh://git@bitbucket.cambiumnetworks.com:7999/cnssng/cnssrouter.git</url>
+        <credentialsId>5fbdc694-e002-4a4c-b41e-04eed7dcc9c0</credentialsId>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>release/cnMaestro_release_2.1.0</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+  <assignedNode>in01jenkins03.camnwk.com</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec>*/15 * * * *</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>git config --global user.email &quot;cnMaestroDevOps@cambiumnetworks.com&quot;
+git config --global user.name &quot;Cnmaestro Devops&quot;
+git fetch --prune origin +refs/tags/*:refs/tags/*
+version=$(git for-each-ref --sort=taggerdate --format &apos;%(refname)&apos;  | grep &quot;2.1.0&quot; | grep -v &quot;noc&quot;|tail -1 |cut -d &apos;/&apos; -f 3| cut -d &apos;-&apos; -f 1)
+rel_type=$(git for-each-ref --sort=taggerdate --format &apos;%(refname)&apos;  | grep &quot;2.1.0&quot;|grep -v &quot;noc&quot;| tail -1 |cut -d &apos;/&apos; -f 3 | cut -d &apos;-&apos; -f 2 | tr -dc &apos;a-z&apos;)
+rel_number=$(git for-each-ref --sort=taggerdate --format &apos;%(refname)&apos;  | grep &quot;2.1.0&quot; |grep -v &quot;noc&quot;| tail -1 |cut -d &apos;/&apos; -f 3 | cut -d &apos;-&apos; -f 2 | tr -dc &apos;0-9&apos;)
+dep_type=$(git for-each-ref --sort=taggerdate --format &apos;%(refname)&apos;  | grep &quot;2.1.0&quot; | grep -v &quot;noc&quot;|tail -1 |cut -d &apos;/&apos; -f 3 | cut -d &apos;-&apos; -f 3)
+
+if [ -z &quot;${dep_type}&quot; ]
+then
+      echo &quot;\${dep_type} is empty&quot;
+      dep_type=&quot;cloud&quot;
+else
+      echo &quot;\${dep_type} is NOT empty&quot;
+fi
+
+rel_number=$((rel_number+1))
+echo ${rel_number}
+tag_ver=&quot;${version}-${rel_type}${rel_number}&quot;
+echo ${tag_ver}
+
+if [ -n &quot;$MSG_PREFIX&quot; ] ; then
+    RELEASE_MSG=&quot;${tag_ver}&quot;
+fi
+
+git tag -m &quot;$RELEASE_MSG&quot; &quot;${tag_ver}&quot; HEAD
+
+
+#prune old tags and always fetch latest tag
+#git fetch --prune origin +refs/tags/*:refs/tags/*
+
+echo &quot;build starts...&quot;
+git describe
+
+#clean the node_modules &amp; build folder
+rm -rf build
+rm -rf build_debian
+rm -rf node_modules
+rm -rf server/node_modules
+rm -rf client/node_modules
+rm -rf test/node_modules
+
+pwd
+ls -l
+
+BUILD_ID=&quot;${tag_ver}&quot;
+DEPLOYMENT=&quot;CLOUD&quot;
+
+echo &quot;cnMaestro deployment type   :&quot; ${DEPLOYMENT}
+
+#install all node_modules
+npm install
+grunt install
+
+#grunt install dirty the package-lock.json so we checkout fresh code again
+git checkout .
+
+#grunt build
+if [ ${DEPLOYMENT} = &quot;CLOUD&quot; ]; then
+  grunt build --deployment=cloud --build=release
+elif [ ${DEPLOYMENT} = &quot;NOC&quot; ]; then
+  grunt build --deployment=noc --build=release
+fi
+
+
+rm -rf router_build.tar
+
+
+
+
+
+</command>
+    </hudson.tasks.Shell>
+    <hudson.plugins.parameterizedtrigger.TriggerBuilder plugin="parameterized-trigger@2.35.2">
+      <configs>
+        <hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+          <configs>
+            <hudson.plugins.parameterizedtrigger.CurrentBuildParameters/>
+            <hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+              <properties>BUILD_NUMBER= $BUILD_NUMBER
+BUILD_ID=${BUILD_ID}</properties>
+              <textParamValueOnNewLine>false</textParamValueOnNewLine>
+            </hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+          </configs>
+          <projects>cnmaestro_ci_cloud_router</projects>
+          <condition>ALWAYS</condition>
+          <triggerWithNoParameters>false</triggerWithNoParameters>
+          <triggerFromChildProjects>false</triggerFromChildProjects>
+          <buildAllNodesWithLabel>false</buildAllNodesWithLabel>
+        </hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+      </configs>
+    </hudson.plugins.parameterizedtrigger.TriggerBuilder>
+  </builders>
+  <publishers>
+    <hudson.plugins.emailext.ExtendedEmailPublisher plugin="email-ext@2.61">
+      <recipientList>anish.bosco@cambiumnetworks.com;</recipientList>
+      <configuredTriggers>
+        <hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+          <email>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <recipientProviders>
+              <hudson.plugins.emailext.plugins.recipients.ListRecipientProvider/>
+            </recipientProviders>
+            <attachmentsPattern></attachmentsPattern>
+            <attachBuildLog>false</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo>$PROJECT_DEFAULT_REPLYTO</replyTo>
+            <contentType>project</contentType>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+        <hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
+          <email>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <recipientProviders>
+              <hudson.plugins.emailext.plugins.recipients.DevelopersRecipientProvider/>
+              <hudson.plugins.emailext.plugins.recipients.ListRecipientProvider/>
+            </recipientProviders>
+            <attachmentsPattern></attachmentsPattern>
+            <attachBuildLog>false</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo>$PROJECT_DEFAULT_REPLYTO</replyTo>
+            <contentType>project</contentType>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
+      </configuredTriggers>
+      <contentType>text/html</contentType>
+      <defaultSubject>Project Cnmaestro Router Development Build - 2.1.0:$BUILD_NUMBER result </defaultSubject>
+      <defaultContent>Hi All,
+
+Project Cnmaestro Router Development Build  with id :${BUILD_ID} is success,
+
+Build Status is $BUILD_URL :: $BUILD_STATUS
+
+Build Artifacts: ftp://in01jenkins02.camnwk.com/2.1.0/
+login : ftpuser/ftpuser
+Commit: $GIT_COMMIT
+
+Regards,
+cnMaestro Team</defaultContent>
+      <attachmentsPattern></attachmentsPattern>
+      <presendScript>$DEFAULT_PRESEND_SCRIPT</presendScript>
+      <postsendScript></postsendScript>
+      <attachBuildLog>true</attachBuildLog>
+      <compressBuildLog>true</compressBuildLog>
+      <replyTo>anish.bosco@cambiumnetworks.com; </replyTo>
+      <saveOutput>false</saveOutput>
+      <disabled>false</disabled>
+    </hudson.plugins.emailext.ExtendedEmailPublisher>
+  </publishers>
+  <buildWrappers/>
+</project>
