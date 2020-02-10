@@ -37,7 +37,7 @@ jenkins_updates_file:
 
 export_plugin_list:
   cmd.run:
-    - name: {{ jenkins_cli }} list-plugins | awk '{if(substr($NF, length($NF))==")") print $1":"$(NF - 1) ; else print $1":"$NF}' > /tmp/jenkins_pluginlist.txt
+    - unless: {{ jenkins_cli }} list-plugins | awk '{if(substr($NF, length($NF))==")") print $1":"$(NF - 1) ; else print $1":"$NF}' > /tmp/jenkins_pluginlist.txt
 
 {% for plugin in jenkins_plugins %}
 {% set plugin_name = plugin.split(':')[0] %}

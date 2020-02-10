@@ -5,3 +5,4 @@ base:
      - jenkins.users
      - jenkins.jobs
      - jenkins.views
+     - jenkins.credentials

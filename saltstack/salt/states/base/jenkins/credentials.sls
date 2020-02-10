@@ -3,12 +3,11 @@
 {% set jenkins_java_exec = salt['pillar.get']('jenkins:config:java_executable') %}
 {% set jenkins_user = salt['pillar.get']('jenkins:config:user') %}
 {% set jenkins_group = salt['pillar.get']('jenkins:config:group') %}
-{% set jenkins_jobs_home ='/var/log/jenkins/jobs_xml' %}
-
+{% set jenkins_cred_home ='/var/log/jenkins/credentials_xml' %}
 {% set jenkins_admin_token = "$(cat /var/lib/jenkins/secrets/initialAdminPassword)" %}
 {% set jenkins_cli = "{0} -jar {1} -s {2} -http -auth admin:{3}".format(jenkins_java_exec,jenkins_cli_path,jenkins_url,jenkins_admin_token) %}
 
-{{ jenkins_jobs_home }}:
+{{ jenkins_cred_home }}:
   file.directory:
     - user: {{ jenkins_user }}
     - group: {{ jenkins_group }}
@@ -18,23 +17,23 @@
       - user: jenkins_user
       - group: jenkins_group  
 
-export_jobs_list:
+export_credentials_list:
   cmd.run:
-    - unless: {{ jenkins_cli }} list-jobs > /tmp/jenkins_joblist.txt
+    - unless: {{ jenkins_cli }} list-credentials system::system::jenkins > /tmp/jenkins_credentiallist.txt
 
-{% for jenkins_job in salt['pillar.get']('jobs:create') %}
-jobs_xml_{{ jenkins_job }}:
+{% for jenkins_credential in salt['pillar.get']('credentials:create') %}
+credentials_xml_{{ jenkins_credential }}:
   file.managed:
-    - unless: test -f {{ jenkins_jobs_home }}/{{ jenkins_job }}.xml
-    - name: {{ jenkins_jobs_home }}/{{ jenkins_job }}.xml
-    - source: salt://jenkins/jobs/{{ jenkins_job }}.xml
+    - unless: test -f {{ jenkins_cred_home }}/credential-{{ jenkins_credential }}.xml
+    - name: {{ jenkins_cred_home }}/credential-{{ jenkins_credential }}.xml
+    - source: salt://jenkins/credentials/credential-{{ jenkins_credential }}.xml
     - require_in:
-      - jenkins_job_{{ jenkins_job }}
+      - jenkins_credential_{{ jenkins_credential }}
     - require:
       - cmd: plugins_jenkins_serving
 
-jenkins_job_{{ jenkins_job }}:
+jenkins_credential_{{ jenkins_credential }}:
   cmd.run:
-    - unless: grep -w '{{ jenkins_job }}' /tmp/jenkins_joblist.txt
-    - name: {{ jenkins_cli }} create-job '{{ jenkins_job }}' < {{ jenkins_jobs_home }}/{{ jenkins_job }}.xml
+    - unless: grep -w 'id-{{ jenkins_credential }}' /tmp/jenkins_credentiallist.txt
+    - name: {{ jenkins_cli }} create-credentials-by-xml system::system::jenkins _ < {{ jenkins_cred_home }}/credential-{{ jenkins_credential }}.xml
 {% endfor %}

@@ -121,3 +121,7 @@ jenkins:
       remote_url: http://10.110.134.132:8080
       username: sanity
       apitoken: 1234567890
+    mailer:
+      smtp_host: uk01utl04.camnwk.com
+      default_suffix: "@cambiumnetworks.com"
+      smtp_port: 587

@@ -8,3 +8,4 @@ base:
     - jenkins.jobs
     - jenkins.configuration
     - jenkins.views
+    - jenkins.credentials
