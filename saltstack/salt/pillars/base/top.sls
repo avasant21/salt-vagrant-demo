@@ -6,3 +6,4 @@ base:
      - jenkins.jobs
      - jenkins.views
      - jenkins.credentials
+     - jenkins.config
