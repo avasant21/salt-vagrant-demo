@@ -1,6 +1,8 @@
 base:
   '*':
-    - java
+    - packages
+    - linux
+    - nginx
     - jenkins
     - jenkins.cli
     - jenkins.plugins

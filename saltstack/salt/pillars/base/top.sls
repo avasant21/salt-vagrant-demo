@@ -1,6 +1,7 @@
 base:
   '*':
-     - java
+     - linux
+     - packages
      - jenkins
      - jenkins.users
      - jenkins.jobs

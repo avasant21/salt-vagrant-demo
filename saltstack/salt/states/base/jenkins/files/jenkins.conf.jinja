@@ -77,9 +77,11 @@ UMASK=027
 # port for HTTP connector (default 8080; disable with -1)
 HTTP_PORT={{ jenkins_port }}
 
-
 # servlet context, important if you want to use apache proxying
 PREFIX=/$NAME
+
+# Address for HTTP Listener (default 0.0.0.0)
+HTTP_HOST=127.0.0.1
 
 # arguments to pass to jenkins.
 # --javahome=$JAVA_HOME
@@ -91,5 +93,5 @@ PREFIX=/$NAME
 # --webroot=~/.jenkins/war
 # --prefix=$PREFIX
 
-JENKINS_ARGS="--webroot=/var/cache/$NAME/war --httpPort=$HTTP_PORT"
+JENKINS_ARGS="--webroot=/var/cache/$NAME/war --httpPort=$HTTP_PORT --httpListenAddress=$HTTP_HOST"
 

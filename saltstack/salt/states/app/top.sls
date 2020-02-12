@@ -1,3 +1,0 @@
-app:
-  '*':
-    - jenkins_install

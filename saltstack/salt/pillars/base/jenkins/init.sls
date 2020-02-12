@@ -8,8 +8,9 @@ jenkins:
     user: jenkins
     group: jenkins
     additional_groups: ["www-data"]
-    server_name: "192.168.50.11"
-    master_url: http://192.168.50.11:8080
+    server_name: jenkinstest.camnwk.com
+    jenkins_url: https://jenkinstest.camnwk.com
+    master_url: http://localhost:8080
     master_admin: cnMaestro Jenkins <cnmaestro_jenkins@cambiumnetworks.com>
     pkgs: 
       jenkins:
