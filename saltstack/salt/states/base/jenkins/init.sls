@@ -47,7 +47,7 @@ jenkins_repo:
     - require_in:
       - pkg: jenkins_pkg
 
-{% for pkg, args in jenkins_pkgs.iteritems() %}
+{% for pkg, args in jenkins_pkgs.items() %}
 {{ pkg }}_pkg:
   pkg.installed:
     - name: {{ pkg }}

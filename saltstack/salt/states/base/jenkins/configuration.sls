@@ -55,7 +55,7 @@ publish_over_ssh_common_config:
       - service: jenkins_service
 
 # Publish Over SSH - SSH Servers
-{% for ssh_name, ssh_args in salt['pillar.get']('configuration:publish_over_ssh:ssh_servers', {}).iteritems() %}
+{% for ssh_name, ssh_args in salt['pillar.get']('configuration:publish_over_ssh:ssh_servers', {}).items() %}
 publish_over_ssh_server_{{ ssh_name }}:
   cmd.run:
     - unless: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.getDescriptor("jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin").getConfiguration("{{ ssh_name }}").getName()' | grep -w '{{ ssh_name }}'
@@ -66,7 +66,7 @@ publish_over_ssh_server_{{ ssh_name }}:
 {% endfor %}
 
 # Publish Over CIFS - CIFS Servers
-{% for cifs_name, cifs_args in salt['pillar.get']('configuration:publish_over_cifs:cifs_servers', {}).iteritems() %}
+{% for cifs_name, cifs_args in salt['pillar.get']('configuration:publish_over_cifs:cifs_servers', {}).items() %}
 publish_over_ssh_server_{{ cifs_name }}:
   cmd.run:
     - unless: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.getDescriptor("jenkins.plugins.publish_over_cifs.CifsPublisherPlugin").getConfiguration("{{ cifs_name }}").getName()' | grep -w '{{ cifs_name }}'

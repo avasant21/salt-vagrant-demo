@@ -18,6 +18,7 @@
       - group: jenkins_group  
 
 {% for jenkins_view in salt['pillar.get']('views:create') %}
+{% if pillar.get('views:delete') and jenkins_view not in pillar.get('views:delete') %}
 views_xml_{{ jenkins_view }}:
   file.managed:
     - unless: test -f {{ jenkins_views_home }}/{{ jenkins_view }}.xml
@@ -28,8 +29,20 @@ views_xml_{{ jenkins_view }}:
     - require:
       - cmd: plugins_jenkins_serving
 
-jenkins_view_{{ jenkins_view }}:
+create_view_{{ jenkins_view }}:
   cmd.run:
     - unless: {{ jenkins_cli }} get-view '{{ jenkins_view }}'
     - name: {{ jenkins_cli }} create-view {{ jenkins_view }} < {{ jenkins_views_home }}/{{ jenkins_view }}.xml
+{% endif %}
+{% endfor %}
+
+{% for jenkins_view_d in salt['pillar.get']('views:delete') %}
+{% if jenkins_view_d %}
+delete_view_{{ jenkins_view_d }}:
+  cmd.run:
+    - onlyif: {{ jenkins_cli }} get-view '{{ jenkins_view_d }}'
+    - name: {{ jenkins_cli }} delete-view {{ jenkins_view_d }}
+    - require:
+      - cmd: plugins_jenkins_serving
+{% endif %}
 {% endfor %}

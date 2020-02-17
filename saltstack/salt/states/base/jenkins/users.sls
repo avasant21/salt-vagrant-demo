@@ -14,7 +14,7 @@ setup_GlobalMatrixAuthorizationStrategy:
     - require:
       - cmd: plugins_jenkins_serving
 
-{% for user, args in pillar.get('present_users', {}).iteritems() %}
+{% for user, args in pillar.get('present_users', {}).items() %}
 {% if pillar.get('deleted_users') and user not in pillar.get('deleted_users') %}
 create_user_{{ user }}:
    cmd.run:

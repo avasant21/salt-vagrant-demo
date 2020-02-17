@@ -8,7 +8,9 @@ views:
     -
   
   delete:
-    -
+    - AUTOMATION
+    - PyUnit
+    - "2.3.0"
   
   disable:
     -

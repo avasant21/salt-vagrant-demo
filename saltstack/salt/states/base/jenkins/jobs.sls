@@ -23,6 +23,7 @@ export_jobs_list:
     - unless: {{ jenkins_cli }} list-jobs > /tmp/jenkins_joblist.txt
 
 {% for jenkins_job in salt['pillar.get']('jobs:create') %}
+{% if pillar.get('jobs:delete') and jenkins_job not in pillar.get('jobs:delete') %}
 jobs_xml_{{ jenkins_job }}:
   file.managed:
     - unless: test -f {{ jenkins_jobs_home }}/{{ jenkins_job }}.xml
@@ -33,8 +34,20 @@ jobs_xml_{{ jenkins_job }}:
     - require:
       - cmd: plugins_jenkins_serving
 
-jenkins_job_{{ jenkins_job }}:
+create_job_{{ jenkins_job }}:
   cmd.run:
     - unless: grep -w '{{ jenkins_job }}' /tmp/jenkins_joblist.txt
     - name: {{ jenkins_cli }} create-job '{{ jenkins_job }}' < {{ jenkins_jobs_home }}/{{ jenkins_job }}.xml
+{% endif %}
+{% endfor %}
+
+{% for jenkins_job_d in salt['pillar.get']('jobs:delete') %}
+{% if jenkins_job_d %}
+delete_job_{{ jenkins_job_d }}:
+  cmd.run:
+    - onlyif: grep -w '{{ jenkins_job_d }}' /tmp/jenkins_joblist.txt
+    - name: {{ jenkins_cli }} delete-job '{{ jenkins_job_d }}'
+    - require:
+      - cmd: plugins_jenkins_serving
+{% endif %}
 {% endfor %}
