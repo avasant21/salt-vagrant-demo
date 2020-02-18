@@ -8,9 +8,9 @@
 
 setup_GlobalMatrixAuthorizationStrategy:
   cmd.run:
-    - unless: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.getAuthorizationStrategy()' | grep 'GlobalMatrixAuthorizationStrategy'
+    - unless: echo 'jenkins.model.Jenkins.instance.getAuthorizationStrategy()' | {{ jenkins_cli }} groovysh | grep 'GlobalMatrixAuthorizationStrategy'
     - name: |
-        echo "import hudson.security.* \n jenkins.model.Jenkins.instance.setSecurityRealm(new HudsonPrivateSecurityRealm(false)) \n jenkins.model.Jenkins.instance.setAuthorizationStrategy(new GlobalMatrixAuthorizationStrategy()) \n jenkins.model.Jenkins.instance.getAuthorizationStrategy().add(jenkins.model.Jenkins.ADMINISTER, 'admin') \n  jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
+        echo -e "import hudson.security.* \n jenkins.model.Jenkins.instance.setSecurityRealm(new HudsonPrivateSecurityRealm(false)) \n jenkins.model.Jenkins.instance.setAuthorizationStrategy(new GlobalMatrixAuthorizationStrategy()) \n jenkins.model.Jenkins.instance.getAuthorizationStrategy().add(jenkins.model.Jenkins.ADMINISTER, 'admin') \n  jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
     - require:
       - cmd: plugins_jenkins_serving
 
@@ -18,11 +18,11 @@ setup_GlobalMatrixAuthorizationStrategy:
 {% if pillar.get('deleted_users') and user not in pillar.get('deleted_users') %}
 create_user_{{ user }}:
    cmd.run:
-    - unless: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.securityRealm.allUsers.find {it.id == "{{ user }}"}.getId()' | grep {{ user }}
+    - unless: echo 'jenkins.model.Jenkins.instance.securityRealm.allUsers.find {it.id == "{{ user }}"}.getId()' | {{ jenkins_cli }} groovysh | grep {{ user }}
     - name: |
-         {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.securityRealm.createAccount("{{ user }}", "{{ args['password'] }}")'
-         {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.securityRealm.allUsers.find {it.id == "{{ user }}"}.setFullName("{{ args['fullname'] }}")'
-         echo "import hudson.model.* \n jenkins.model.Jenkins.instance.securityRealm.allUsers.find {it.id == '{{ user }}'}.addProperty(new hudson.tasks.Mailer.UserProperty('{{ args['email'] }}')) \n jenkins.model.Jenkins.instance.getAuthorizationStrategy().add(jenkins.model.Jenkins.'{{ args['access'] }}', '{{ user }}') \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
+         echo 'jenkins.model.Jenkins.instance.securityRealm.createAccount("{{ user }}", "{{ args['password'] }}")' | {{ jenkins_cli }} groovysh
+         echo 'jenkins.model.Jenkins.instance.securityRealm.allUsers.find {it.id == "{{ user }}"}.setFullName("{{ args['fullname'] }}")' | {{ jenkins_cli }} groovysh
+         echo -e "import hudson.model.* \n jenkins.model.Jenkins.instance.securityRealm.allUsers.find {it.id == '{{ user }}'}.addProperty(new hudson.tasks.Mailer.UserProperty('{{ args['email'] }}')) \n jenkins.model.Jenkins.instance.getAuthorizationStrategy().add(jenkins.model.Jenkins.'{{ args['access'] }}', '{{ user }}') \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
     - require:
       - cmd: plugins_jenkins_serving
 {% endif %}
@@ -32,8 +32,8 @@ create_user_{{ user }}:
 {% if d_user %}
 delete_user_{{ d_user }}:
    cmd.run:
-    - onlyif: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.securityRealm.allUsers.find {it.id == "{{ d_user }}"}.getId()' | grep {{ d_user }}
-    - name: echo "import hudson.model.* \n jenkins.model.Jenkins.instance.securityRealm.allUsers.find {it.id == '{{ d_user }}'}.delete() \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
+    - onlyif: echo 'jenkins.model.Jenkins.instance.securityRealm.allUsers.find {it.id == "{{ d_user }}"}.getId()' | {{ jenkins_cli }} groovysh | grep {{ d_user }}
+    - name: echo -e "import hudson.model.* \n jenkins.model.Jenkins.instance.securityRealm.allUsers.find {it.id == '{{ d_user }}'}.delete() \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
     - require:
       - cmd: plugins_jenkins_serving
 {% endif %}

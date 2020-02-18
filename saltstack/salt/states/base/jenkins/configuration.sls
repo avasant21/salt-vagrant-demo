@@ -19,25 +19,25 @@
 
 parameteried_remote_trigger:
     cmd.run:
-    - unless: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.getDescriptorByType(org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteBuildConfiguration.DescriptorImpl.class).getRemoteSites()[0].getDisplayName()' | grep '{{ param_remote_display_name }}'
+    - unless: echo 'jenkins.model.Jenkins.instance.getDescriptorByType(org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteBuildConfiguration.DescriptorImpl.class).getRemoteSites()[0].getDisplayName()' | {{ jenkins_cli }} groovysh | grep '{{ param_remote_display_name }}'
     - name: |
-        echo "auth = new org.jenkinsci.plugins.ParameterizedRemoteTrigger.auth2.TokenAuth() \n auth.setUserName('{{ param_remote_username }}') \n auth.setApiToken('{{ param_remote_apitoken }}') \n remoteJenkinsServer = new org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteJenkinsServer() \n remoteJenkinsServer.setDisplayName('{{ param_remote_display_name }}') \n remoteJenkinsServer.setAddress('{{ param_remote_url }}') \n remoteJenkinsServer.setAuth2(auth) \n descriptor1 = jenkins.model.Jenkins.instance.getDescriptorByType(org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteBuildConfiguration.DescriptorImpl.class) \n descriptor1.setRemoteSites(remoteJenkinsServer) \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
+        echo -e "auth = new org.jenkinsci.plugins.ParameterizedRemoteTrigger.auth2.TokenAuth() \n auth.setUserName('{{ param_remote_username }}') \n auth.setApiToken('{{ param_remote_apitoken }}') \n remoteJenkinsServer = new org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteJenkinsServer() \n remoteJenkinsServer.setDisplayName('{{ param_remote_display_name }}') \n remoteJenkinsServer.setAddress('{{ param_remote_url }}') \n remoteJenkinsServer.setAuth2(auth) \n descriptor1 = jenkins.model.Jenkins.instance.getDescriptorByType(org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteBuildConfiguration.DescriptorImpl.class) \n descriptor1.setRemoteSites(remoteJenkinsServer) \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
     - require:
       - service: jenkins_service
 
 mailer_config:
   cmd.run:
-    - unless: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.getDescriptor("hudson.tasks.Mailer").getSmtpHost()' | grep '{{ mailer_smtphost }}'
+    - unless: echo 'jenkins.model.Jenkins.instance.getDescriptor("hudson.tasks.Mailer").getSmtpHost()' | {{ jenkins_cli }} groovysh | grep '{{ mailer_smtphost }}'
     - name: |
-        echo "jenkins.model.Jenkins.instance.getDescriptor('hudson.tasks.Mailer').setSmtpHost('{{ mailer_smtphost }}') \n jenkins.model.Jenkins.instance.getDescriptor('hudson.tasks.Mailer').setSmtpPort('{{ mailer_smtpport }}') \n jenkins.model.Jenkins.instance.getDescriptor('hudson.tasks.Mailer').setDefaultSuffix('{{ mailer_suffix }}') \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
+        echo -e "jenkins.model.Jenkins.instance.getDescriptor('hudson.tasks.Mailer').setSmtpHost('{{ mailer_smtphost }}') \n jenkins.model.Jenkins.instance.getDescriptor('hudson.tasks.Mailer').setSmtpPort('{{ mailer_smtpport }}') \n jenkins.model.Jenkins.instance.getDescriptor('hudson.tasks.Mailer').setDefaultSuffix('{{ mailer_suffix }}') \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
     - require:
       - service: jenkins_service
 
 mail_ext_config:
   cmd.run:
-    - unless: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.getDescriptor("hudson.plugins.emailext.ExtendedEmailPublisher").getSmtpServer()' | grep '{{ mailer_smtphost }}'
+    - unless: echo 'jenkins.model.Jenkins.instance.getDescriptor("hudson.plugins.emailext.ExtendedEmailPublisher").getSmtpServer()' | {{ jenkins_cli }} groovysh | grep '{{ mailer_smtphost }}'
     - name: |
-        echo "jenkins.model.Jenkins.instance.getDescriptor('hudson.plugins.emailext.ExtendedEmailPublisher').setSmtpServer('{{ mailer_smtphost }}') \n jenkins.model.Jenkins.instance.getDescriptor('hudson.plugins.emailext.ExtendedEmailPublisher').setSmtpPort('{{ mailer_smtpport }}') \n jenkins.model.Jenkins.instance.getDescriptor('hudson.plugins.emailext.ExtendedEmailPublisher').setDefaultSuffix('{{ mailer_suffix }}') \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
+        echo -e "jenkins.model.Jenkins.instance.getDescriptor('hudson.plugins.emailext.ExtendedEmailPublisher').setSmtpServer('{{ mailer_smtphost }}') \n jenkins.model.Jenkins.instance.getDescriptor('hudson.plugins.emailext.ExtendedEmailPublisher').setSmtpPort('{{ mailer_smtpport }}') \n jenkins.model.Jenkins.instance.getDescriptor('hudson.plugins.emailext.ExtendedEmailPublisher').setDefaultSuffix('{{ mailer_suffix }}') \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
     - require:
       - service: jenkins_service
 
@@ -48,9 +48,9 @@ mail_ext_config:
 
 publish_over_ssh_common_config:
   cmd.run:
-    - unless: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.getDescriptor(jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin).getCommonConfig().getKeyPath()' | grep -w '{{ possh_cc_key_path }}'
+    - unless: echo 'jenkins.model.Jenkins.instance.getDescriptor(jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin).getCommonConfig().getKeyPath()' | {{ jenkins_cli }} groovysh | grep -w '{{ possh_cc_key_path }}'
     - name: |
-        echo "jenkins.model.Jenkins.instance.getDescriptor(jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin).setCommonConfig(new jenkins.plugins.publish_over_ssh.BapSshCommonConfiguration('{{ possh_cc_encryptedPassphrase }}', '{{ possh_cc_key }}', '{{ possh_cc_key_path }}', false)) \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
+        echo -e "jenkins.model.Jenkins.instance.getDescriptor(jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin).setCommonConfig(new jenkins.plugins.publish_over_ssh.BapSshCommonConfiguration('{{ possh_cc_encryptedPassphrase }}', '{{ possh_cc_key }}', '{{ possh_cc_key_path }}', false)) \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
     - require:
       - service: jenkins_service
 
@@ -58,9 +58,9 @@ publish_over_ssh_common_config:
 {% for ssh_name, ssh_args in salt['pillar.get']('configuration:publish_over_ssh:ssh_servers', {}).items() %}
 publish_over_ssh_server_{{ ssh_name }}:
   cmd.run:
-    - unless: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.getDescriptor("jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin").getConfiguration("{{ ssh_name }}").getName()' | grep -w '{{ ssh_name }}'
+    - unless: echo  'jenkins.model.Jenkins.instance.getDescriptor("jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin").getConfiguration("{{ ssh_name }}").getName()' | {{ jenkins_cli }} groovysh | grep -w '{{ ssh_name }}'
     - name: |
-        echo "jenkins.model.Jenkins.instance.getDescriptor(jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin).addHostConfiguration(new jenkins.plugins.publish_over_ssh.BapSshHostConfiguration('{{ ssh_name }}', '{{ ssh_args.hostname }}', '{{ ssh_args.ssh_user }}', '', '{{ ssh_args.root_dir }}', 22, 300000, false, '', '', false)) \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
+        echo -e "jenkins.model.Jenkins.instance.getDescriptor(jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin).addHostConfiguration(new jenkins.plugins.publish_over_ssh.BapSshHostConfiguration('{{ ssh_name }}', '{{ ssh_args.hostname }}', '{{ ssh_args.ssh_user }}', '', '{{ ssh_args.root_dir }}', 22, 300000, false, '', '', false)) jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
     - require:
       - service: jenkins_service
 {% endfor %}
@@ -69,9 +69,18 @@ publish_over_ssh_server_{{ ssh_name }}:
 {% for cifs_name, cifs_args in salt['pillar.get']('configuration:publish_over_cifs:cifs_servers', {}).items() %}
 publish_over_ssh_server_{{ cifs_name }}:
   cmd.run:
-    - unless: {{ jenkins_cli }} groovysh 'jenkins.model.Jenkins.instance.getDescriptor("jenkins.plugins.publish_over_cifs.CifsPublisherPlugin").getConfiguration("{{ cifs_name }}").getName()' | grep -w '{{ cifs_name }}'
+    - unless: echo 'jenkins.model.Jenkins.instance.getDescriptor("jenkins.plugins.publish_over_cifs.CifsPublisherPlugin").getConfiguration("{{ cifs_name }}").getName()' | {{ jenkins_cli }} groovysh | grep -w '{{ cifs_name }}'
     - name: |
-        echo "jenkins.model.Jenkins.instance.getDescriptor(jenkins.plugins.publish_over_cifs.CifsPublisherPlugin).addHostConfiguration(new jenkins.plugins.publish_over_cifs.CifsHostConfiguration('{{ cifs_name }}', '{{ cifs_args.hostname }}', '{{ cifs_args.cifs_user }}', '{{ cifs_args.cifs_password }}', '{{ cifs_args.remote_dir }}', 445, 30000, 4194305)) \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
+        echo -e "jenkins.model.Jenkins.instance.getDescriptor(jenkins.plugins.publish_over_cifs.CifsPublisherPlugin).addHostConfiguration(new jenkins.plugins.publish_over_cifs.CifsHostConfiguration('{{ cifs_name }}', '{{ cifs_args.hostname }}', '{{ cifs_args.cifs_user }}', '{{ cifs_args.cifs_password }}', '{{ cifs_args.remote_dir }}', 445, 30000, 4194305)) \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
     - require:
       - service: jenkins_service
 {% endfor %}
+
+# Set number of executors
+number_of_executors:
+  cmd.run:
+    - unless: echo 'jenkins.model.Jenkins.instance.getNumExecutors()' | {{ jenkins_cli }} groovysh | grep '{{ salt['pillar.get']('configuration:num_of_executors') }}'
+    - name: |
+        echo -e "jenkins.model.Jenkins.instance.setNumExecutors('{{ salt['pillar.get']('configuration:num_of_executors') }}') \n jenkins.model.Jenkins.instance.save()" | {{ jenkins_cli }} groovysh
+    - require:
+      - service: jenkins_service

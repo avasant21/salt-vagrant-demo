@@ -93,5 +93,5 @@ HTTP_HOST=127.0.0.1
 # --webroot=~/.jenkins/war
 # --prefix=$PREFIX
 
-JENKINS_ARGS="--webroot=/var/cache/$NAME/war --httpPort=$HTTP_PORT --httpListenAddress=$HTTP_HOST"
+JENKINS_ARGS="--webroot=/var/cache/$NAME/war --httpPort=$HTTP_PORT --httpListenAddress=$HTTP_HOST -Djenkins.install.runSetupWizard=false"
 

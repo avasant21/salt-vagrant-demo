@@ -1,4 +1,5 @@
 configuration:
+  num_of_executors: 4
   parameteried_remote_trigger:
     display_name: cnmaestro-qa-automation
     remote_url: http://10.110.134.132:8080

@@ -38,9 +38,8 @@ jenkins_responding:
 
 jenkins_set_url:
   cmd.run:
-    - unless: {{ jenkins_cli }} groovysh 'jenkins.model.JenkinsLocationConfiguration.get().getUrl()' | grep '{{ jenkins_server_name }}'
+    - unless: echo 'jenkins.model.JenkinsLocationConfiguration.get().getUrl()' | {{ jenkins_cli }} groovysh | grep '{{ jenkins_server_name }}'
     - name: |
-        {{ jenkins_cli }} groovysh 'jenkins.model.JenkinsLocationConfiguration.get().setUrl("{{ jenkins_ui_url }}")'
-        {{ jenkins_cli }} groovysh 'jenkins.model.JenkinsLocationConfiguration.get().setAdminAddress("{{ jenkins_master_admin }}")'
+        echo -e 'jenkins.model.JenkinsLocationConfiguration.get().setUrl("{{ jenkins_ui_url }}") \n jenkins.model.JenkinsLocationConfiguration.get().setAdminAddress("{{ jenkins_master_admin }}") \n jenkins.model.Jenkins.instance.setInstallState(jenkins.install.InstallState.INITIAL_SETUP_COMPLETED) \n jenkins.model.Jenkins.instance.save()' | {{ jenkins_cli }} groovysh
     - require:
       - service: jenkins_service

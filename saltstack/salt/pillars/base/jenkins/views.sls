@@ -1,16 +1,10 @@
-views:
-  create:
-    - cnMaestro_Release_Builds
-#    - AUTOMATION
-#    - PyUnit
-#    - "2.3.0"
-  update:
-    -
-  
-  delete:
-    - AUTOMATION
-    - PyUnit
-    - "2.3.0"
-  
-  disable:
-    -
+views_present:
+  - cnMaestro_Release_Builds
+  - AUTOMATION
+  - PyUnit
+  - "2.3.0"
+
+views_absent:
+  - AUTOMATION
+  - PyUnit
+  - "2.3.0"
