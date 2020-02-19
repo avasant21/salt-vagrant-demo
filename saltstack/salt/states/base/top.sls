@@ -2,6 +2,7 @@ base:
   '*':
     - packages
     - linux
+    - linux.users
     - nginx
     - jenkins
     - jenkins.cli
